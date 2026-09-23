@@ -1,0 +1,181 @@
+--criando a tabela de clientes.
+
+CREATE TABLE cliente(
+    codigo_cliente SERIAL PRIMARY KEY,
+    email VARCHAR(120) NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(13)
+);
+
+--Verificação pra ver se está correto.
+
+SELECT * FROM cliente;
+
+--criando a tabela destinada aos pedidos.
+
+CREATE TABLE pedido(
+codigo_pedido SERIAL PRIMARY KEY,
+codigo_cliente_fk INTEGER NOT NULL REFERENCES cliente(codigo_cliente),
+dt_entrada DATE NOT NULL,
+dt_embarque DATE,
+tipo VARCHAR(40),
+desconto NUMERIC(10,2) DEFAULT 0 CHECK (desconto >= 0),
+valor_total NUMERIC(10,2) NOT NULL CHECK (valor_total > 0)
+);
+
+-- aqui eu adicionei (espero que certo) a chave estrangeira
+--lendo o MER definindo valor total e chave estrangeira e primary_key tambem.
+
+--criando a tabela de produtos.
+
+CREATE TABLE produto(
+    codigo_produto SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    preco NUMERIC(10,2) NOT NULL CHECK (preco > 0),
+    unidade_medida VARCHAR(5) NOT NULL
+);
+
+--Agora vou criar a terceira parte, a parte de itens pedidos que onde esta contido algumas especificações da atividade como:
+--o codigo do pedido em FOREIGN KEY e do produto, a quantidade e o sub-total.
+
+CREATE TABLE itemPedido(
+id_pedido_fk INTEGER NOT NULL REFERENCES pedido(codigo_pedido),
+id_produto_fk INTEGER NOT NULL REFERENCES produto(codigo_produto),
+quantidade INTEGER NOT NULL CHECK (quantidade > 0),
+sub_total NUMERIC(10,2) NOT NULL CHECK (sub_total > 0),
+PRIMARY KEY (id_pedido_fk, id_produto_fk)
+);
+
+
+--Aqui é a parte de colocar os clientes
+INSERT INTO cliente(email, nome, telefone) VALUES
+('ana.souza@email.com', 'Ana Souza', '11987654321'),
+('bruno.lima@email.com', 'Bruno Lima', NULL),
+('carla.silva@email.com', 'Carla Silva', '21998765432'),
+('daniel.alves@email.com', 'Daniel Alves', NULL),
+('elena.pereira@email.com', 'Elena Pereira', '31991234567');
+
+--aqui é a parte de colocar os produtos e etc, nada novo
+INSERT INTO produto(nome, preco, unidade_medida) VALUES
+('Arroz 5kg', 28.90, 'KG'),
+('Coca-cola 2L', 8.50, 'L'),
+('Caixa de chocolate', 45.00, 'CX'),
+('Caneta', 2.30, 'UN'),
+('Leite 1L', 5.20, 'L'),
+('Detergente', 3.75, 'UN'),
+('Café 1kg', 15.90, 'KG'),
+('Caixa de Suco', 32.00, 'CX');
+
+--aqui é só colocando os pedidos mesmo.
+INSERT INTO pedido(codigo_cliente_fk, dt_entrada, dt_embarque, tipo, desconto, valor_total) VALUES
+(1, '2026-08-01', '2026-08-03', 'Varejo', 0,     69.30),
+(2, '2026-08-05', NULL,         'Atacado', 20.00, 128.60),
+(3, '2026-08-10', '2026-08-12', 'Varejo', 0,     56.25),
+(4, '2026-08-15', NULL,         'Varejo', 5.00,  90.20),
+(1, '2026-09-01', '2026-09-02', 'Atacado', 0,     603.50),
+(5, '2026-09-04', NULL,         'Varejo', 10.00, 23.40);
+
+--Inserção de codigos dos produtos, pedidos, cliente e etc
+INSERT INTO itemPedido(id_pedido_fk, id_produto_fk, quantidade, sub_total) VALUES
+(1, 1, 2, 57.80),
+(1, 4, 5, 11.50),
+(2, 2, 10, 85.00),
+(2, 7, 4, 63.60),
+(3, 3, 1, 45.00),
+(3, 6, 3, 11.25),
+(4, 5, 6, 31.20),
+(4, 8, 2, 64.00),
+(5, 1, 15, 433.50),
+(5, 2, 20, 170.00),
+(6, 4, 8, 18.40),
+(6, 6, 4, 15.00);
+
+--mostrando os clientes
+SELECT * FROM cliente;
+
+--Mostrando nome e telefone
+SELECT nome, telefone FROM cliente;
+
+--listando os clientes em ordem alabetica
+SELECT * FROM cliente ORDER BY nome;
+
+--mostrando apenas clientes com nome que começa com a letra 'A'.
+SELECT * FROM cliente WHERE nome LIKE 'A%';
+
+--Mostrando somene com 'Silva' no nome.
+SELECT * FROM cliente WHERE nome LIKE '%Silva%';
+
+--clientes sem telefone cadastrado.
+SELECT * FROM cliente WHERE telefone IS NULL;
+
+--Mostrando agora todos os produtos.
+SELECT nome FROM produto;
+
+--mostando agora nome e preço dos prosutos
+SELECT nome, preco FROM produto;
+
+--Mostrando agora os produtos em ordem crescente de preço.
+SELECT * FROM produto ORDER BY preco;
+
+--mostrando agora os produtos com preço maior a R$ 50,00.
+SELECT * FROM produto WHERE preco>50;
+
+--mostrando os produtos com preço entre R$ 10,00 e R$ 100,00.a
+SELECT * FROM produto WHERE preco>=10 AND preco<=100;
+
+--mostrando os produtos cujo a unidade é UN.
+SELECT nome, unidade_medida FROM produto WHERE unidade_medida='UN';
+
+--mostrando agora os produtos cujo a unidade seja KG ou L
+SELECT nome, unidade_medida FROM produto WHERE unidade_medida = 'KG' OR unidade_medida ='L';
+
+--mostrando todos os pedidos.
+SELECT * FROM pedido;
+
+--mostrando pedidos com desconto maior que R$0,00.
+SELECT codigo_pedido, desconto FROM pedido WHERE desconto>0;
+
+--mostrando agora os pedidos que ainda não foram embarcados.
+SELECT * FROM pedido WHERE dt_embarque IS NULL;
+
+--mostrando agora os pedidos que ja foram embarcados.
+SELECT * FROM pedido WHERE dt_embarque IS NOT NULL;
+
+--mostrando os que serão realizados em uma data especifica.
+SELECT * FROM pedido WHERE dt_embarque = '2026-08-03';
+
+--mostrando o pedido a ser entregue entre duas datas.
+SELECT * FROM pedido WHERE dt_embarque >= '2026-08-03' AND dt_embarque <= '2026-09-02';
+
+--mostrando os produtos em ordem decrescente de valor.
+SELECT * FROM pedido ORDER BY valor_total DESC;
+
+--mostrando os produtos com valor maior a R$500,00.
+SELECT * FROM pedido WHERE valor_total>500;
+
+--mostrando os itens cuja a quantidade é maior que três (3).
+SELECT * FROM itemPedido WHERE quantidade > 3;
+
+--mostrando os itens cujo o subtotal seja maior que R$100,00.
+SELECT * FROM itemPedido WHERE sub_total > 100;
+
+--mostrando a contagem de clientes cadastrados.
+SELECT COUNT(*) FROM cliente;
+
+--mostrando quantos produtos estão cadastrados.
+SELECT COUNT(*) FROM produto;
+
+--mostrando o maior preço dos produtos.
+SELECT MAX(preco) FROM produto;
+
+--mostrando o menor preço dos produtos.
+SELECT MIN(preco) FROM produto;
+
+--Calculando a média dos produtos.
+SELECT AVG(preco) FROM produto;
+
+--calculando a soma dos valores dos pedidos.
+SELECT SUM(valor_total) FROM pedido;
+
+--contando os pedidos ainda não embarcados.
+SELECT COUNT(*) FROM pedido WHERE dt_embarque IS NULL;
